@@ -1,0 +1,32 @@
+{
+  // Cloudflare Workers (Static Assets) deployment for the TanStack Start frontend.
+  //
+  // Why Workers + Static Assets (not Pages):
+  //   TanStack Start v1.167 emits a Web-standard `fetch` handler at
+  //   dist/server/server.js (the SSR Worker) plus a static client at
+  //   dist/client/. Cloudflare Workers Static Assets serves the client files
+  //   directly and falls through to the Worker for every non-asset route, which
+  //   is exactly what SSR + TanStack Router need. A hard refresh on a deep route
+  //   (e.g. /analytics) has no matching file, so it reaches the Worker and is
+  //   server-rendered instead of 404-ing.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "product-dashboard",
+
+  // The SSR Worker entry. Wrangler bundles its relative imports
+  // (dist/server/assets/*) automatically.
+  "main": "dist/server/server.js",
+
+  // nodejs_compat is required: the server bundle imports node:async_hooks.
+  "compatibility_date": "2025-05-05",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "assets": {
+    // Static client build. Files here are served before the Worker runs;
+    // unmatched paths fall through to `main` for SSR (default routing).
+    "directory": "./dist/client"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}
