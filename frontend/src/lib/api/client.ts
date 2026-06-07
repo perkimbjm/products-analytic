@@ -22,7 +22,8 @@ console.log(
   import.meta.env.VITE_API_BASE_URL
 );
 
-const BASE = (import.meta.env.VITE_API_BASE_URL ?? "") + "/api";
+const BASE =
+  "https://products-analytic-production.up.railway.app/api";
 
 /**
  * Error thrown by the API layer. `offline` is true when the backend could not be
