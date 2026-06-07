@@ -27,7 +27,7 @@ export function OfflineBanner() {
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold leading-tight">Backend not reachable</p>
         <p className="text-xs text-white/90 mt-0.5">
-          Showing no data. Start the API server on port 3000, then retry.
+          Showing no data. Start the API server, then retry.
         </p>
       </div>
       <div className="flex items-center gap-1 shrink-0">
