@@ -14,16 +14,16 @@ import type {
   TopProductDTO,
 } from "./types";
 
-// In development the Vite proxy forwards "/api/*" → localhost:3000, so no env var needed.
-// In production, VITE_API_BASE_URL must be set to the Railway backend URL
-// (e.g. https://my-backend.up.railway.app).  The value is baked into the bundle at build time.
-console.log(
-  "VITE_API_BASE_URL =",
-  import.meta.env.VITE_API_BASE_URL
-);
-
-const BASE =
-  "https://products-analytic-production.up.railway.app/api";
+// API base URL — resolved from VITE_API_BASE_URL at BUILD time (import.meta.env).
+//
+// - Development: the var is unset, so API_ROOT is "" and requests hit "/api/*",
+//   which the Vite dev proxy (vite.config.ts) forwards to the local backend.
+// - Production: set VITE_API_BASE_URL to the Railway backend ROOT — no trailing
+//   "/api" and no trailing slash; "/api" is appended here. The value is baked
+//   into the bundle when `vite build` runs, so it must be present at build time
+//   (via frontend/.env.production locally, or a Cloudflare build env var in CI).
+const API_ROOT = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+const BASE = `${API_ROOT}/api`;
 
 /**
  * Error thrown by the API layer. `offline` is true when the backend could not be
