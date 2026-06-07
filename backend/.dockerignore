@@ -1,0 +1,28 @@
+# Node modules — reinstalled inside the image
+node_modules
+
+# Compiled output — rebuilt inside the image
+dist
+
+# Runtime database — created/seeded inside the image from the committed sample
+data/app.sqlite
+data/raw
+
+# Environment files — injected as env vars in Railway, never baked into the image
+.env
+.env.*
+
+# Development + test artifacts
+tests
+*.test.ts
+*.spec.ts
+
+# Git and editor
+.git
+.gitignore
+.vscode
+.idea
+
+# OS artifacts
+.DS_Store
+Thumbs.db
