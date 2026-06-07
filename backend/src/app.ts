@@ -19,14 +19,26 @@ export function createApp(): Express {
   app.use(express.json());
 
   // CORS
+  const allowedOrigins = new Set<string>([
+    config.CORS_ORIGIN,
+    ...(config.CORS_ALLOWED_ORIGINS?.split(',').map((origin) => origin.trim()).filter(Boolean) ?? []),
+  ]);
+
   app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', config.CORS_ORIGIN);
+    const requestOrigin = req.header('Origin');
+    if (requestOrigin && allowedOrigins.has(requestOrigin)) {
+      res.header('Access-Control-Allow-Origin', requestOrigin);
+      res.header('Vary', 'Origin');
+    }
+
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type');
+
     if (req.method === 'OPTIONS') {
       res.sendStatus(200);
       return;
     }
+
     next();
   });
 

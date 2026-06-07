@@ -6,8 +6,8 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(8080),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
   CORS_ORIGIN: z.string().url().default('http://localhost:5173'),
+  CORS_ALLOWED_ORIGINS: z.string().optional(),
   DATABASE_PATH: z.string().default('./data/app.sqlite'),
-  SPATIALITE_EXTENSION_PATH: z.string().default('mod_spatialite'),
   // Import/seed only (never read at runtime)
   MAPID_DATASET_URL: z.string().url().optional(),
   MAPID_API_TOKEN: z.string().optional(),

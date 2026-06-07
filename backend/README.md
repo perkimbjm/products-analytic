@@ -473,11 +473,13 @@ const products = await fetch(`/api/products?${query}`).then(r => r.json());
 export NODE_ENV=production
 export PORT=8080
 export CORS_ORIGIN=https://yourdomain.com   # batasi origin di production
+export CORS_ALLOWED_ORIGINS=https://other-frontend.example.com,https://another.example.com
 ```
 
 CORS sudah aktif sebagai middleware manual (lihat `src/app.ts`). Untuk
-production, set `CORS_ORIGIN` ke domain frontend. Rate limiting belum ada —
-tambahkan mis. `express-rate-limit` jika diperlukan.
+production, set `CORS_ORIGIN` ke domain frontend dan gunakan
+`CORS_ALLOWED_ORIGINS` jika Anda ingin mengizinkan lebih dari satu origin.
+Rate limiting belum ada — tambahkan mis. `express-rate-limit` jika diperlukan.
 
 ---
 
