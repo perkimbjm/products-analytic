@@ -109,10 +109,10 @@ curl http://localhost:3000/health
   - Segments: High-Performer, mid-range, Low-Performer
 
 ### Location Data
-- **Koordinat Wajib** - Setiap produk harus memiliki latitude/longitude
+- **Koordinat (Required)** - Setiap produk harus memiliki latitude/longitude
 - **Unique by Coordinates** - Tidak ada duplikasi lokasi berdasarkan lat/lng
-- **Optional Location Name** - Nama lokasi bersifat opsional (dapat NULL)
-- **Koordinat Sintetis (Indonesia)** - Titik koordinat pada dataset diletakkan di wilayah Indonesia (mis. Pulau Jawa, lat ≈ -7, lng ≈ 106) untuk keperluan demo GIS, sementara metrik penjualannya dengan angka yang sedikit tidak relevan dengan rupiah tapi menggunakan USD. Jadi geografi bersifat sintetis dan tidak terkait dengan mata uang. Titik koordinat juga dibirkan apa adanya walaupun banyak lokasi yang berada di laut
+- **Location Name (Optional)** - Nama lokasi bersifat opsional (dapat NULL)
+- **Koordinat Sintetis (Indonesia)** - Titik koordinat pada dataset diletakkan di wilayah Indonesia (mis. Pulau Jawa, lat ≈ -7, lng ≈ 106) untuk keperluan demo GIS, sementara metrik penjualannya diasumsikan menggunakan USD. Jadi geografi bersifat sintetis dan tidak terkait dengan mata uang. Titik koordinat juga dibirkan apa adanya walaupun banyak lokasi yang berada di laut
 
 ### Product Data
 - **Unique by (product_key, location_id)** - Satu produk tidak boleh muncul 2x di lokasi yang sama
@@ -139,7 +139,7 @@ Brief membebaskan interpretasi kolom *maintenance / recency / product health*. A
   Threshold didefinisikan di `src/config/domain.ts` (`MAINTENANCE_THRESHOLDS`) dan bersifat **dinamis terhadap tanggal hari ini** — response juga mengembalikan `healthyThresholdDate` & `warningThresholdDate` agar frontend bisa menampilkan tanggal patokannya.
 
 - **⚠️ Semua produk bernilai `critical` (efek data lama / historis):**
-  Dataset sumber (dari Mapid) berisi `last_sale_date` di sekitar **tahun 2014** (mis. `2014-01-28`). Karena status dihitung relatif terhadap *tanggal hari ini* (2026), selisihnya **> 4.000 hari** sehingga **setiap produk otomatis masuk kategori `critical`**. Ini **bukan bug** — melainkan konsekuensi dataset historis yang dipakai apa adanya. Distribusi maintenance karena itu akan menampilkan 100% critical hingga dataset diganti dengan data yang lebih baru.
+  Dataset sumber (dari Mapid) berisi `last_sale_date` di sekitar **tahun 2014** (mis. `2014-01-28`). Karena status dihitung relatif terhadap *tanggal hari ini* (2026), selisihnya **> 4.000 hari** sehingga **setiap produk otomatis masuk kategori `critical`**. Ini **bukan bug** — melainkan konsekuensi dataset historis yang dipakai apa adanya. Distribusi maintenance karena itu akan menampilkan 100% critical, kecuali tanggal di dataset diganti dengan data yang lebih baru.
 
 - **`recency` vs `last_sale_date`** - Dataset juga punya field `recency` (mis. `135`) yang **tidak dipakai** untuk perhitungan status; backend sengaja memakai `last_sale_date` agar status selalu konsisten dengan tanggal kalender saat ini, bukan angka recency statis yang sudah usang sejak dataset dibuat. Field `recency` tetap disimpan (`recency_days`) untuk keperluan referensi.
 
@@ -163,13 +163,12 @@ Sesuai catatan brief ("jika data hilang/tidak lengkap, gunakan asumsi"), kebijak
 - **`location_name` opsional → `NULL`.**
 
 ### Dataset Source
-- **Sumber data = MAPID GeoServer API** (GeoJSON) yang dikonfigurasi via env `MAPID_DATASET_URL` (+ `MAPID_API_TOKEN` opsional). Untuk reproduktibilitas, sebuah snapshot sample disertakan di `data/seed/sample.json` dan dipakai oleh `npm run seed`.
-- **Transformasi diperbolehkan** (sesuai brief): dataset sumber dinormalisasi menjadi skema relasional (tabel `product`, `category`, `segment`, `location`) sebelum disajikan sebagai DTO.
+- **Sumber data = MAPID GeoServer API** yang dikonfigurasi via env `MAPID_DATASET_URL` (+ `MAPID_API_TOKEN` opsional). Untuk reproduktibilitas, sebuah snapshot sample disertakan di `data/seed/sample.json` dan dipakai oleh `npm run seed`.
+- **Transformasi diperbolehkan** (sesuai brief): dataset sumber dinormalisasi menjadi skema relasional (tabel `product`, `category`, `segment`, `location`) sebelum disajikan sebagai DTO (Data Transfer Object).
 
 ### API & Requests
 - **Stateless** - Setiap request berdiri sendiri, tidak ada session
-- **No Authentication** - API terbuka (production harus menambahkan auth)
-- **No Real-time Updates** - Menggunakan polling, bukan WebSocket
+- **No Authentication** - API terbuka (ke depannya harus menambahkan auth)
 - **Pagination** - Default limit 50, maximum 10000 (untuk GeoJSON export)
 
 ### Performance
@@ -458,7 +457,7 @@ const products = await fetch(`/api/products?${query}`).then(r => r.json());
 - Input validation with Zod
 - Proper error messages (no leaks)
 - Type safety (TypeScript)
-- **CORS** - Middleware manual di `src/app.ts`, origin dikonfigurasi via env `CORS_ORIGIN` (default `http://localhost:5173`)
+- **CORS** - Middleware manual di `src/app.ts`, origin dikonfigurasi via env `CORS_ORIGIN` (default `http://localhost:5173`). Allowed methods: `GET, POST, OPTIONS`; allowed headers: `Content-Type, Cache-Control` (frontend mengirim header `Cache-Control` untuk cache hint, jadi harus diizinkan agar preflight tidak gagal)
 - **Response compression** - gzip/brotli via `compression`
 
 ### ⚠️ Not Implemented (Production TODO)
@@ -477,8 +476,10 @@ export CORS_ALLOWED_ORIGINS=https://other-frontend.example.com,https://another.e
 ```
 
 CORS sudah aktif sebagai middleware manual (lihat `src/app.ts`). Untuk
-production, set `CORS_ORIGIN` ke domain frontend dan gunakan
-`CORS_ALLOWED_ORIGINS` jika Anda ingin mengizinkan lebih dari satu origin.
+production, set `CORS_ORIGIN` ke domain frontend (mis. domain Cloudflare Workers
+`https://<app>.workers.dev`) **tanpa trailing slash** — origin dicek persis
+(`allowedOrigins.has(requestOrigin)`). Gunakan `CORS_ALLOWED_ORIGINS`
+(comma-separated) jika ingin mengizinkan lebih dari satu origin.
 Rate limiting belum ada — tambahkan mis. `express-rate-limit` jika diperlukan.
 
 ---
@@ -500,17 +501,6 @@ Rate limiting belum ada — tambahkan mis. `express-rate-limit` jika diperlukan.
 > dengan fallback ke `LIKE` untuk query pendek (< 2 karakter).
 
 
-### Environment Variables (Optional)
-```bash
-NODE_ENV=development                       # development | production
-PORT=8080                                  # Server port (default kode: 8080; .env lokal di-set 3000)
-LOG_LEVEL=info                             # debug | info | warn | error
-CORS_ORIGIN=http://localhost:5173          # Origin frontend yang diizinkan
-DATABASE_PATH=./data/app.sqlite            # Lokasi file SQLite
-
-# Import dataset eksternal (hanya dipakai saat import, bukan runtime)
-MAPID_DATASET_URL=                         # URL GeoJSON dataset
-MAPID_API_TOKEN=                           # Bearer token (opsional)
 ```
 
 > **Catatan port:** Default di kode (`src/config/env.ts`) adalah **8080** dan
@@ -518,8 +508,7 @@ MAPID_API_TOKEN=                           # Bearer token (opsional)
 > untuk development, sehingga contoh `http://localhost:3000` di atas berlaku untuk
 > dev lokal.
 
-### Common Issues & Solutions
-
+### Troubleshooting
 **Problem:** "Cannot find module 'express'"
 ```bash
 # Solution: Install dependencies
@@ -563,5 +552,5 @@ docker run -p 8080:8080 product-dashboard-backend
 ---
 
 
-**Last Updated:** 2026-06-07
+**Last Updated:** 2026-06-08
 

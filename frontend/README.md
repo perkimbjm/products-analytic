@@ -98,13 +98,18 @@ Semua variabel memakai prefix `VITE_` (syarat Vite). Lihat `.env.example`.
 | `VITE_CACHE_STALE_TIME` | `5m` | Berapa lama data dianggap "fresh" sebelum refetch di background |
 | `VITE_CACHE_GC_TIME` | `10m` | Berapa lama data tak terpakai disimpan di memori |
 | `VITE_CACHE_BASEMAP_TTL` | `30d` | TTL cache basemap peta |
-| `VITE_API_BASE_URL` | *(kosong)* | URL backend untuk **production**. Saat dev dibiarkan kosong (pakai proxy). |
+| `VITE_API_BASE_URL` | *(kosong)* | **ROOT** URL backend untuk **production** (mis. `https://my-backend.up.railway.app`) — **tanpa** `/api` dan **tanpa** trailing slash; client menambahkan `/api` sendiri. Saat dev dibiarkan kosong (pakai proxy). |
 
 > Format durasi: `5m` (menit), `1h` (jam), `30d` (hari).
 
-**Catatan production:** saat di-deploy, set `VITE_API_BASE_URL` ke URL backend
-(mis. `https://my-backend.up.railway.app`). Nilainya di-*bake* ke dalam bundle
-saat build, jadi pastikan sudah benar sebelum `npm run build`.
+**Catatan production (penting):** `VITE_API_BASE_URL` adalah variabel **build-time** —
+nilainya di-*bake* ke dalam bundle saat `vite build` (lewat `import.meta.env`), bukan
+runtime. Jadi:
+- Set ke **root** backend saja, tanpa `/api`. Resolusi-nya ada di `src/lib/api/client.ts`
+  (`API_ROOT` + `/api`). Jika kosong saat build, request jatuh ke `/api/*` relatif
+  (benar untuk dev, tapi **salah** untuk production karena mengarah ke domain frontend).
+- Variabel **harus tersedia ketika build berjalan** — lewat `.env.production` (build lokal)
+  atau build variable di CI (lihat [Deployment](#-deployment)).
 
 ---
 
@@ -153,9 +158,29 @@ src/
 
 ## 🚢 Deployment
 
-Project ini siap di-deploy ke **Vercel** (lihat `vercel.json`):
-- Install command: `npm install`
-- Build command: `npm run build`
+Project ini di-deploy ke **Cloudflare Workers** (Static Assets + SSR). Konfigurasi
+ada di `wrangler.jsonc`:
+- `main`: `dist/server/server.js` — Worker SSR (TanStack Start)
+- `assets.directory`: `dist/client` — file statis client
 
-Jangan lupa set environment variable `VITE_API_BASE_URL` di dashboard Vercel
-agar mengarah ke backend production.
+### Opsi A — Deploy manual dari lokal
+```bash
+cd frontend
+npm run deploy        # menjalankan: vite build && wrangler deploy
+```
+Build membaca `frontend/.env.production`, jadi pastikan `VITE_API_BASE_URL` di file
+itu sudah benar (root backend, tanpa `/api`). File ini **gitignored**.
+
+### Opsi B — Cloudflare Workers Builds (CI dari repo terhubung)
+Karena `.env.production` tidak ikut ter-commit, set `VITE_API_BASE_URL` sebagai
+**build variable** — bukan runtime variable:
+
+- Dashboard Cloudflare → Worker Anda → **Settings → Build → Build variables and secrets**
+  (⚠️ **bukan** "Variables and Secrets" runtime di bagian atas Settings — yang itu
+  tidak terbaca oleh `vite build`).
+- Tambah `VITE_API_BASE_URL = https://my-backend.up.railway.app` (root, tanpa `/api`).
+- **Trigger build ulang** (Retry build / push commit) — menyimpan variabel saja tidak
+  cukup, build harus dijalankan ulang agar nilainya ter-*bake*.
+
+**Verifikasi:** buka Network tab di app production — request harus menuju
+`https://<backend>/api/...`, bukan relatif ke domain Worker.

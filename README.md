@@ -1,135 +1,76 @@
-*# README.md*
+# Product Analysis Dashboard
 
+Dashboard analisis produk: **peta interaktif sebaran produk (WebGIS)** dan
+**halaman analytics** berisi KPI, chart, dan tabel produk.
 
+Project ini terdiri dari dua bagian yang berjalan terpisah:
 
-*# Development Workspace*
+| Bagian | Folder | Peran | Deploy |
+|--------|--------|-------|--------|
+| **Frontend** | [`frontend/`](./frontend) | UI (peta + analytics) | Cloudflare Workers |
+| **Backend** | [`backend/`](./backend) | REST API + database | Railway |
 
+---
 
+## 🖼️ Tampilan
 
-*Source of truth for:*
+### Map View (WebGIS)
+Peta interaktif sebaran produk dengan clustering dan filter.
 
+![Map View](./asset/webgis.png)
 
+### Analytics Dashboard
+KPI cards, chart distribusi, histogram, dan tabel produk.
 
-*\* Implementation*
+![Dashboard View](./asset/dashboard.png)
 
-*\* Coding Standards*
+### Mobile
+Tampilan responsif di perangkat mobile.
 
-*\* Shared Components*
+<img src="./asset/mobile.png" alt="Mobile View" width="320" />
 
-*\* Dependencies*
+---
 
+## 🧩 Tech Stack
 
+**Frontend** — React 19 + TanStack Start (SSR), TypeScript, Vite, TanStack Query,
+MapLibre GL JS (peta), Recharts (chart), Tailwind CSS + shadcn/ui.
 
-*Rules*
+**Backend** — Node.js + Express, TypeScript, SQLite (better-sqlite3), Zod.
 
+---
 
+## 🚀 Instalasi & Menjalankan
 
-*1. Follow approved architecture.*
+Butuh **Node.js 20+**. Jalankan backend dulu, lalu frontend.
 
-*2. Follow documented requirements.*
+### 1. Backend (`http://localhost:3000`)
+```bash
+cd backend
+npm install
+npm run migrate    # buat database + jalankan migrations
+npm run seed       # isi sample data (opsional)
+npm run dev
+```
 
-*3. Keep modules cohesive.*
+### 2. Frontend (`http://localhost:5173`)
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-*4. Avoid undocumented dependencies.*
+> Saat development, request `/api/*` dari frontend otomatis di-*proxy* ke backend,
+> jadi tidak perlu set URL backend.
 
-*5. Update SYSTEM\_MAP when main flows change.*
+---
 
+## 📚 Dokumentasi Detail
 
+README ini hanya garis besar. Untuk detail lengkap (endpoint API, environment
+variables, asumsi data, deployment, troubleshooting), lihat:
 
-*Files*
-
-
-
-*\* implementation-plan.md*
-
-*\* coding-standards.md*
-
-*\* dependency-register.md*
-
-
-
-*Folders*
-
-
-
-*\* frontend/*
-
-*\* backend/*
-
-*\* shared/*
-
-
-
-*## File Size*
-
-
-
-*Target:*
-
-*< 300 lines*
-
-
-
-*Consider Refactoring:*
-
-*> 500 lines*
-
-
-
-*Required Review:*
-
-*> 800 lines*
-
-
-
-*Exceptions:*
-
-*DTO collections,*
-
-*schema definitions,*
-
-*generated code,*
-
-*configuration maps.*
-
-
-
-*Prefer cohesion over arbitrary file splitting.*
-
-
-
-*## AI Optimization*
-
-
-
-*Prefer files that can be understood in a single read.*
-
-
-
-*Split files when:*
-
-*- multiple responsibilities emerge*
-
-*- navigation becomes difficult*
-
-*- changes frequently affect unrelated logic*
-
-
-
-*Do not split files only to satisfy a line count limit.*
-
-
-
-*## Bootstrap Rule*
-
-
-
-*Do not create source folders until:*
-
-
-
-*- Architecture Review = Approved*
-
-*- Implementation Readiness = Approved*
-
-"# products-analytic" 
+- **Frontend:** [`frontend/README.md`](./frontend/README.md) — halaman aplikasi,
+  env vars, struktur folder, deployment Cloudflare.
+- **Backend:** [`backend/README.md`](./backend/README.md) — 17 endpoint API,
+  asumsi data & KPI, CORS, deployment Railway/Docker.
