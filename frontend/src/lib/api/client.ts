@@ -17,6 +17,11 @@ import type {
 // In development the Vite proxy forwards "/api/*" → localhost:3000, so no env var needed.
 // In production, VITE_API_BASE_URL must be set to the Railway backend URL
 // (e.g. https://my-backend.up.railway.app).  The value is baked into the bundle at build time.
+console.log(
+  "VITE_API_BASE_URL =",
+  import.meta.env.VITE_API_BASE_URL
+);
+
 const BASE = (import.meta.env.VITE_API_BASE_URL ?? "") + "/api";
 
 /**
