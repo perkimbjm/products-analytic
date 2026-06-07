@@ -14,6 +14,9 @@ set -e
 
 DB_FILE="${DATABASE_PATH:-/app/data/app.sqlite}"
 
+# Echo effective runtime configuration (see README.md → "Environment Variables").
+echo "[startup] Config: NODE_ENV=${NODE_ENV:-production} PORT=${PORT:-8080} LOG_LEVEL=${LOG_LEVEL:-info} CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:5173} DATABASE_PATH=$DB_FILE"
+
 if [ ! -f "$DB_FILE" ]; then
   echo "[startup] Database not found at $DB_FILE — re-migrating and seeding..."
   mkdir -p "$(dirname "$DB_FILE")"

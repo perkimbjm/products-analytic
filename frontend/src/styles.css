@@ -1,0 +1,246 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: #faf8ff;
+  --color-foreground: #131b2e;
+  --color-on-background: #131b2e;
+  --color-surface: #faf8ff;
+  --color-on-surface: #131b2e;
+  --color-on-surface-variant: #434655;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f2f3ff;
+  --color-surface-container: #eaedff;
+  --color-surface-container-high: #e2e7ff;
+  --color-surface-container-highest: #dae2fd;
+  --color-surface-variant: #dae2fd;
+  --color-outline: #737686;
+  --color-outline-variant: #c3c6d7;
+  --color-primary: #004ac6;
+  --color-primary-container: #2563eb;
+  --color-primary-fixed: #dbe1ff;
+  --color-on-primary: #ffffff;
+  --color-secondary: #006e2f;
+  --color-tertiary: #784b00;
+  --color-danger: #ef4444;
+  --color-map-bg-light: #f8fafc;
+  --color-category-bikes: #2563eb;
+  --color-category-clothing: #22c55e;
+  --color-category-accessories: #f59e0b;
+
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.5rem;
+  --radius-full: 0.75rem;
+
+  --spacing-header-height: 64px;
+  --spacing-gutter: 1rem;
+  --spacing-margin-desktop: 1.5rem;
+
+  --text-headline-lg: 32px;
+  --text-headline-lg--line-height: 1.2;
+  --text-headline-lg--letter-spacing: -0.02em;
+  --text-headline-lg--font-weight: 700;
+  --text-headline-md: 24px;
+  --text-headline-md--line-height: 1.3;
+  --text-headline-md--font-weight: 600;
+  --text-headline-sm: 20px;
+  --text-headline-sm--line-height: 1.4;
+  --text-headline-sm--font-weight: 600;
+  --text-body-lg: 16px;
+  --text-body-md: 14px;
+  --text-label-md: 12px;
+  --text-label-md--letter-spacing: 0.01em;
+  --text-label-md--font-weight: 500;
+}
+
+/* Map-page surface variables (light defaults; flipped under .dark below).
+   The map page uses these instead of hard-coded hex so it follows the theme. */
+:root {
+  --map-sunken: #eef2f7; /* page background + sunken cards/inputs */
+  --map-panel: #ffffff; /* header, floating panels, controls */
+  --map-border: #e2e8f0;
+  --map-hover: #e2e8f0;
+  --map-text: #0f172a;
+  --map-text-dim: #64748b;
+}
+
+/* Dark theme: override semantic color tokens + map variables. Any utility built
+   from --color-* (bg-surface, text-on-surface, border-outline-variant, …) flips
+   automatically; only hard-coded colors need the map-* variables above. */
+.dark {
+  --color-background: #0b1222;
+  --color-foreground: #e6e9f5;
+  --color-on-background: #e6e9f5;
+  --color-surface: #0f172a;
+  --color-on-surface: #e6e9f5;
+  --color-on-surface-variant: #9aa3b8;
+  --color-surface-container-lowest: #0b1222;
+  --color-surface-container-low: #111a2e;
+  --color-surface-container: #16213b;
+  --color-surface-container-high: #1d2a47;
+  --color-surface-container-highest: #243152;
+  --color-surface-variant: #1e293b;
+  --color-outline: #8a93a8;
+  --color-outline-variant: #25304a;
+  --color-primary: #5b8bff;
+  --color-primary-container: #2563eb;
+  --color-primary-fixed: #1e2b4d;
+  --color-on-primary: #ffffff;
+  --color-secondary: #4ade80;
+  --color-tertiary: #fbbf24;
+
+  --map-sunken: #020617;
+  --map-panel: #0f172a;
+  --map-border: #1e293b;
+  --map-hover: #243044;
+  --map-text: #ffffff;
+  --map-text-dim: #94a3b8;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-outline-variant);
+  }
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-on-background);
+    font-family: var(--font-sans);
+  }
+  .material-symbols-outlined {
+    font-family: "Material Symbols Outlined";
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    font-variation-settings:
+      "FILL" 0,
+      "wght" 400,
+      "GRAD" 0,
+      "opsz" 24;
+  }
+}
+
+/* Keep the MapLibre attribution clear of the map's bottom status bar
+   (h-10 / sm:h-12) so the providers' required credits stay visible.
+   `!important` + z-index beat maplibre-gl.css's own `.maplibregl-ctrl-bottom-right
+   { bottom: 0 }`, which loads after this file. The same offset is applied to the
+   bottom-left cluster so nothing else hides behind the footer either. */
+.maplibregl-ctrl-bottom-right,
+.maplibregl-ctrl-bottom-left {
+  bottom: 2.75rem !important;
+  z-index: 21;
+}
+@media (min-width: 640px) {
+  .maplibregl-ctrl-bottom-right,
+  .maplibregl-ctrl-bottom-left {
+    bottom: 3.25rem !important;
+  }
+}
+/* Legible attribution chip in dark theme. */
+html.dark .maplibregl-ctrl-attrib {
+  background: rgba(20, 24, 33, 0.92);
+}
+html.dark .maplibregl-ctrl-attrib,
+html.dark .maplibregl-ctrl-attrib a {
+  color: var(--color-on-surface);
+  /* Stronger contrast: use on-surface (#e6e9f5) instead of on-surface-variant (#9aa3b8) */
+}
+html.dark .maplibregl-ctrl-attrib-button {
+  filter: invert(1);
+}
+
+/* Micro-interactions & motion for delight */
+
+/* Skeleton fade-in: 0 → 1 opacity over 200ms when content appears. */
+@keyframes skeleton-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.animate-skeleton-fade-out {
+  animation: skeleton-fade-out 200ms ease-out forwards;
+}
+
+/* Content fades in over 200ms (paired with skeleton fade-out). */
+@keyframes content-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-content-fade-in {
+  animation: content-fade-in 200ms ease-out forwards;
+}
+
+/* Table row hover: slide-right 2px + soft highlight. */
+@keyframes table-row-hover-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(2px);
+  }
+}
+
+/* Applied inline via hover or via :hover selector on the table row. */
+
+/* KPI count-up: fade-in + bounce for number counters on mount. */
+@keyframes kpi-count-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-kpi-count-up {
+  animation: kpi-count-up 300ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Map marker hover/selected: scale 1.0 → 1.2 + drop-shadow. */
+@keyframes marker-scale-up {
+  from {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0));
+  }
+  to {
+    transform: scale(1.2);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  }
+}
+
+.animate-marker-hover {
+  animation: marker-scale-up 200ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Table row hover state with animation. */
+tr.hover\:slide-right:hover {
+  animation: table-row-hover-slide 200ms ease-out forwards;
+}

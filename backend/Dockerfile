@@ -60,6 +60,11 @@ ENV NODE_ENV=production
 ENV DATABASE_PATH=/app/data/app.sqlite
 # PORT is typically injected by Railway; default 8080 for local docker run
 ENV PORT=8080
+# Log verbosity (debug | info | warn | error)
+ENV LOG_LEVEL=info
+# CORS allowed origin — OVERRIDE with the real frontend domain at deploy time,
+# e.g. `docker run -e CORS_ORIGIN=https://yourdomain.com ...`
+ENV CORS_ORIGIN=http://localhost:5173
 
 EXPOSE 8080
 
